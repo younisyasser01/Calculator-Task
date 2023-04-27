@@ -1,0 +1,56 @@
+package service;
+
+import java.util.List;
+
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import model.CalculationEntity;
+import repositry.CalculationRepositry;
+
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@RequestScoped
+@Path("/")
+public class CalculationService {
+    @Inject
+    private CalculationRepositry repositry;
+    @Path("calculate")
+    @POST
+    public ResponseResult calculate(CalculationEntity calculate) {
+        int result;
+        switch (calculate.getOperation()) {
+            case "+":
+                result = calculate.getNumber1() + calculate.getNumber2();
+                break;
+            case "-":
+                result = calculate.getNumber1() - calculate.getNumber2();
+                break;
+            case "*":
+                result = calculate.getNumber1() * calculate.getNumber2();
+                break;
+            case "/": {
+                if (calculate.getNumber2() == 0)
+                    throw new IllegalArgumentException("Cannot t divide by zero");
+                result = calculate.getNumber1() / calculate.getNumber2();
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Unsupported operation");
+        }
+        repositry.insert(calculate);
+        return new ResponseResult(result);
+    }
+
+    @Path("calculations")
+    @GET
+    public List<CalculationEntity> getAllCalculations() {
+        return repositry.selectAllCalculations();
+    }
+}
