@@ -1,0 +1,64 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Web.Http;
+
+namespace YourNamespace.Controllers
+{
+    public class CalculationsController : ApiController
+    {
+        [HttpGet]
+        [Route("api/calculations")]
+        public IHttpActionResult GetAllCalculations()
+        {
+            try
+            {
+                // Retrieve all calculations from the database
+                using (var context = new YourDbContext())
+                {
+                    var calculations = context.Calculations.ToList();
+
+                    // Map the calculations to the response format
+                    var response = calculations.Select(c =>
+                        new CalculationResponse
+                        {
+                            Number1 = c.Number1,
+                            Number2 = c.Number2,
+                            Operation = c.Operation
+                        }).ToList();
+
+                    // Return the response to the client
+                    return Ok(response);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle exceptions and return an error response
+                return Content(HttpStatusCode.InternalServerError, ex.Message);
+            }
+        }
+    }
+
+    public class CalculationResponse
+    {
+        public int Number1 { get; set; }
+        public int Number2 { get; set; }
+        public string Operation { get; set; }
+    }
+
+    public class Calculation
+    {
+        public int Id { get; set; }
+        public int Number1 { get; set; }
+        public int Number2 { get; set; }
+        public string Operation { get; set; }
+        public int Result { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class YourDbContext : DbContext
+    {
+        public DbSet<Calculation> Calculations { get; set; }
+    }
+}
